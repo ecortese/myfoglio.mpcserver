@@ -6,7 +6,7 @@ export const fileTools: ToolDefinition[] = [
   // ── 1. Recupero file per ID ──────────────────────────────────────────────────
   {
     name: "file_get",
-    description: "Recupera un file dallo storage tramite il suo ID",
+    description: "Recupera un file dallo storage tramite il suo ID, il suo Public ID o il suo Temporary ID",
     inputSchema: z.object({
       id: z.string().describe("ID univoco del file da recuperare"),
     }),
