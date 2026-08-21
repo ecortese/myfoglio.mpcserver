@@ -12,14 +12,15 @@ export function createClient(baseUrlOverride?: string): AxiosInstance {
   const instance = axios.create({
     baseURL: baseUrlOverride ?? config.MYFOGLIO_BASE_URL,
     headers: {
-      Accept: "application/json",
+      Accept: `application/vnd.myfoglio.v${config.API_VERSION}+json`,
       "Content-Type": "application/json",
     },
   });
 
-  // Inject Bearer token on every request
+  // Inject the bearer token and API version on every request
   instance.interceptors.request.use((req) => {
     req.headers.Authorization = `Bearer ${config.MYFOGLIO_TOKEN}`;
+    req.headers.Accept = `application/vnd.myfoglio.v${config.API_VERSION}+json`;
     return req;
   });
 
