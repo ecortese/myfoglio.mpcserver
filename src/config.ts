@@ -4,6 +4,7 @@ import { z } from "zod";
 const schema = z.object({
   MYFOGLIO_BASE_URL: z.string().url().default("https://api.myfoglio.com"),
   MYFOGLIO_TOKEN: z.string().min(1, "MYFOGLIO_TOKEN is required"),
+  API_VERSION: z.coerce.number().int().positive().default(1),
   MCP_TRANSPORT: z.enum(["stdio", "http"]).default("stdio"),
   MCP_HTTP_PORT: z.coerce.number().int().positive().default(3000),
 });
