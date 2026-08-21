@@ -12,6 +12,10 @@ export { invoiceTools } from "./invoice.js";
 export { creditNoteTools } from "./credit-note.js";
 export { estimateTools } from "./estimate.js";
 export { receiptTools } from "./receipt.js";
+export { deliveryNoteTools } from "./delivery-note.js";
+export { proformaTools } from "./proforma.js";
+export { receivedInvoiceTools } from "./received-invoice.js";
+export { receivedCreditNoteTools } from "./received-credit-note.js";
 
 import { contactTools } from "./contact.js";
 import { productTools } from "./product.js";
@@ -22,6 +26,10 @@ import { invoiceTools } from "./invoice.js";
 import { creditNoteTools } from "./credit-note.js";
 import { estimateTools } from "./estimate.js";
 import { receiptTools } from "./receipt.js";
+import { deliveryNoteTools } from "./delivery-note.js";
+import { proformaTools } from "./proforma.js";
+import { receivedInvoiceTools } from "./received-invoice.js";
+import { receivedCreditNoteTools } from "./received-credit-note.js";
 
 export const allTools: import("../server.js").ToolDefinition[] = [
   // ...accountTools,
@@ -35,4 +43,8 @@ export const allTools: import("../server.js").ToolDefinition[] = [
   ...creditNoteTools,
   ...estimateTools,
   ...receiptTools,
+  ...deliveryNoteTools,
+  ...proformaTools,
+  ...receivedInvoiceTools,
+  ...receivedCreditNoteTools,
 ];
