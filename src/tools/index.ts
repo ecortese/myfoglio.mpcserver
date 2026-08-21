@@ -7,14 +7,21 @@ export { productTools } from "./product.js";
 export { bankTools } from "./bank.js";
 export { searchTools } from "./search.js";
 export { validationTools } from "./validation.js";
-// export { invoiceTools } from "./invoice.js";
 // export { analyticsTools } from "./analytics.js";
+export { invoiceTools } from "./invoice.js";
+export { creditNoteTools } from "./credit-note.js";
+export { estimateTools } from "./estimate.js";
+export { receiptTools } from "./receipt.js";
 
 import { contactTools } from "./contact.js";
 import { productTools } from "./product.js";
 import { bankTools } from "./bank.js";
 import { searchTools } from "./search.js";
 import { validationTools } from "./validation.js";
+import { invoiceTools } from "./invoice.js";
+import { creditNoteTools } from "./credit-note.js";
+import { estimateTools } from "./estimate.js";
+import { receiptTools } from "./receipt.js";
 
 export const allTools: import("../server.js").ToolDefinition[] = [
   // ...accountTools,
@@ -23,6 +30,9 @@ export const allTools: import("../server.js").ToolDefinition[] = [
   ...bankTools,
   ...searchTools,
   ...validationTools,
-  // ...invoiceTools,
   // ...analyticsTools,
+  ...invoiceTools,
+  ...creditNoteTools,
+  ...estimateTools,
+  ...receiptTools,
 ];
