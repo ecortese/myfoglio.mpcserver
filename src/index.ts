@@ -21,6 +21,15 @@ async function main(): Promise<void> {
     const app = express();
     app.use(express.json());
 
+    app.get("/health", (_req, res) => {
+      res.status(200).json({
+        status: "ok",
+        transport: "http",
+        service: "myfoglio-mcp",
+        version: "0.1.0",
+      });
+    });
+
     const httpTransport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => crypto.randomUUID(),
     });
@@ -46,7 +55,8 @@ async function main(): Promise<void> {
       console.error(
         `[myfoglio-mcp] HTTP transport listening on port ${config.MCP_HTTP_PORT}`
       );
-      console.error(`  POST /mcp  — MCP endpoint`);
+      console.error(`  GET  /health — health check`);
+      console.error(`  POST /mcp     — MCP endpoint`);
       console.error(
         `  Header X-Myfoglio-Base-Url overrides the API base URL per request`
       );
