@@ -7,7 +7,9 @@ export { productTools } from "./product.js";
 export { bankTools } from "./bank.js";
 export { searchTools } from "./search.js";
 export { validationTools } from "./validation.js";
-// export { analyticsTools } from "./analytics.js";
+export { analyticsTools } from "./analytics.js";
+export { selfInvoiceTools } from "./self-invoice.js";
+export { fileTools } from "./file.js";
 export { invoiceTools } from "./invoice.js";
 export { creditNoteTools } from "./credit-note.js";
 export { estimateTools } from "./estimate.js";
@@ -22,6 +24,9 @@ import { productTools } from "./product.js";
 import { bankTools } from "./bank.js";
 import { searchTools } from "./search.js";
 import { validationTools } from "./validation.js";
+import { analyticsTools } from "./analytics.js";
+import { selfInvoiceTools } from "./self-invoice.js";
+import { fileTools } from "./file.js";
 import { invoiceTools } from "./invoice.js";
 import { creditNoteTools } from "./credit-note.js";
 import { estimateTools } from "./estimate.js";
@@ -38,8 +43,10 @@ export const allTools: import("../server.js").ToolDefinition[] = [
   ...bankTools,
   ...searchTools,
   ...validationTools,
-  // ...analyticsTools,
+  ...analyticsTools,
   ...invoiceTools,
+  ...selfInvoiceTools,
+  ...fileTools,
   ...creditNoteTools,
   ...estimateTools,
   ...receiptTools,
