@@ -19,7 +19,6 @@ async function main(): Promise<void> {
   if (transport === "http") {
     // ── HTTP / SSE transport ────────────────────────────────────────────────
     const app = express();
-    app.use(express.json());
 
     app.get("/health", (_req, res) => {
       res.status(200).json({
@@ -46,7 +45,9 @@ async function main(): Promise<void> {
           baseUrlOverride;
       }
 
-      await httpTransport.handleRequest(req, res);
+      // The SDK transport reads and parses the raw request body itself.
+      // Avoid Express body parsers here or the JSON-RPC payload becomes malformed.
+      await httpTransport.handleRequest(req, res, req.body as unknown);
     });
 
     await server.connect(httpTransport);
