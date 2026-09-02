@@ -10,7 +10,7 @@ Guida per eseguire il server MCP **myfoglio** in locale, in modalità **stdio**,
 |-----------|----------------|
 | Node.js | ≥ 20 |
 | npm | ≥ 10 |
-| Account myfoglio | con API token attivo |
+| Account myfoglio | con credenziali API OAuth2 V2 attive |
 
 ---
 
@@ -33,16 +33,22 @@ npm install
 
 ## 3. Configura le variabili d'ambiente
 
-Copia il file di esempio e compilalo con le tue credenziali:
+Copia il file di esempio e compila con le tue credenziali:
 
 ```bash
 cp .env.example .env
 ```
 
-Apri `.env` e imposta almeno la variabile obbligatoria:
+Apri `.env` e imposta i valori di autenticazione OAuth2 V2. Esempio minimo:
 
 ```env
-MYFOGLIO_TOKEN=il-tuo-token-api
+MYFOGLIO_BASE_URL=https://api.myfoglio.com
+MYFOGLIO_API_KEY=your_api_key
+MYFOGLIO_API_SECRET=your_api_secret
+# Optional refresh token reuse
+MYFOGLIO_REFRESH_TOKEN=your_refresh_token
+API_VERSION=2
+MCP_TRANSPORT=stdio
 ```
 
 ---
@@ -65,18 +71,13 @@ npm start
 node dist/index.js
 ```
 
-In modalità stdio il server legge i messaggi MCP dallo **stdin** e scrive le risposte sullo **stdout**. Non viene avviato nessun server HTTP.
+In modalità stdio il server legge i messaggi MCP dallo **stdin** e scrive le risposte sullo **stdout**.
 
 ---
 
 ## 6. Integrazione con Claude Desktop
 
-Aggiungi la seguente configurazione al file `claude_desktop_config.json` di Claude Desktop.
-
-**Percorso del file di configurazione:**
-
-- **macOS / Linux:** `~/.config/claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+Aggiungi la seguente configurazione al file `claude_desktop_config.json` di Claude Desktop:
 
 ```json
 {
@@ -85,15 +86,14 @@ Aggiungi la seguente configurazione al file `claude_desktop_config.json` di Clau
       "command": "node",
       "args": ["/path/to/myfoglio.mpcserver/dist/index.js"],
       "env": {
-        "MYFOGLIO_TOKEN": "il-tuo-token",
-        "MYFOGLIO_BASE_URL": "https://api.myfoglio.com"
+        "MYFOGLIO_BASE_URL": "https://api.myfoglio.com",
+        "MYFOGLIO_API_KEY": "your_api_key",
+        "MYFOGLIO_API_SECRET": "your_api_secret"
       }
     }
   }
 }
 ```
-
-> **Nota:** sostituisci `/path/to/myfoglio.mpcserver` con il percorso assoluto della cartella clonata sul tuo sistema.
 
 ---
 
@@ -105,40 +105,29 @@ Dopo aver riavviato Claude Desktop, verifica che il server sia attivo:
 2. Chiedi: *"Lista le mie fatture myfoglio"* oppure *"Recupera il riepilogo analitico del 2024"*.
 3. Se il server è configurato correttamente, Claude invocherà automaticamente i tool MCP appropriati.
 
-Per un test dalla riga di comando puoi usare il client MCP di test ufficiale:
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js
-```
-
 ---
 
 ## 8. Variabili d'ambiente disponibili
 
 | Variabile | Obbligatoria | Valore predefinito | Descrizione |
 |-----------|:---:|---|---|
-| `MYFOGLIO_TOKEN` | ✅ | — | Token API per autenticarsi con myfoglio |
 | `MYFOGLIO_BASE_URL` | ❌ | `https://api.myfoglio.com` | URL base delle API myfoglio |
+| `MYFOGLIO_API_KEY` | ✅ | — | API key MyFoglio |
+| `MYFOGLIO_API_SECRET` | ✅ | — | API secret MyFoglio |
+| `MYFOGLIO_REFRESH_TOKEN` | ❌ | — | Token per il refresh automatico |
 | `MCP_TRANSPORT` | ❌ | `stdio` | Modalità di trasporto: `stdio` o `http` |
 | `MCP_HTTP_PORT` | ❌ | `3000` | Porta HTTP (solo se `MCP_TRANSPORT=http`) |
+
+> Il server richiede una configurazione valida con `MYFOGLIO_API_KEY` e `MYFOGLIO_API_SECRET`.
 
 ---
 
 ## 9. Override URL per sviluppo locale
 
-Se stai sviluppando o testando contro un'istanza locale delle API myfoglio, imposta la variabile `MYFOGLIO_BASE_URL` nel file `.env`:
+Se stai sviluppando o testando contro un'istanza locale delle API myfoglio, imposta la variabile `MYFOGLIO_BASE_URL` nel file `.env`.
 
 ```env
 MYFOGLIO_BASE_URL=http://localhost:5000
-```
-
-In alternativa, puoi passarla direttamente nella configurazione Claude Desktop all'interno di `"env"`:
-
-```json
-"env": {
-  "MYFOGLIO_TOKEN": "il-tuo-token",
-  "MYFOGLIO_BASE_URL": "http://localhost:5000"
-}
 ```
 
 Questo consente di puntare a un ambiente di staging o a un mock server senza modificare il codice sorgente.
