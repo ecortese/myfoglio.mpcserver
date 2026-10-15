@@ -2,35 +2,145 @@ import { z } from "zod";
 import { apiClient } from "../client.js";
 import type { ToolDefinition } from "../server.js";
 
-// Schema Zod per il cedente/prestatore (Seller) dell'autofattura
-const SellerSchema = z.object({
-  ReferencedContactID: z.number().int().positive().optional().describe("ID del contatto già presente in rubrica"),
-  CompanyName: z.string().optional().describe("Ragione sociale del cedente/prestatore"),
-  VatNumber: z.string().optional().describe("Partita IVA del cedente/prestatore"),
-  FiscalCode: z.string().optional().describe("Codice fiscale del cedente/prestatore"),
+const AddressSchema = z.object({
+  Country: z.string().describe("Codice paese"),
+  State: z.string().optional(),
+  City: z.string().optional(),
+  Street: z.string().optional(),
+  ZipCode: z.string().optional(),
 });
 
-// Schema Zod per una riga dell'autofattura
+const TelephoneAndEmailSchema = z.object({
+  Mobile: z.string().optional(),
+  Phone: z.string().optional(),
+  Fax: z.string().optional(),
+  Email: z.string().optional(),
+});
+
+const BankAccountSchema = z.object({
+  ReferencedBankID: z.number().int().positive().optional(),
+  Name: z.string().optional(),
+  IBAN: z.string().optional(),
+  Agency: z.string().optional(),
+  Swift: z.string().optional(),
+  Holder: z.string().optional(),
+  Currency: z.string().optional(),
+  Balance: z.number().optional(),
+  BalanceUpdate: z.string().optional(),
+  Notes: z.string().optional(),
+  Address: AddressSchema.optional(),
+});
+
+const ContactInfoSchema = z.object({
+  Title: z.string().optional(),
+  Name: z.string().optional(),
+  Lastname: z.string().optional(),
+  TelephoneAndEmail: TelephoneAndEmailSchema.optional(),
+  Address: AddressSchema.optional(),
+});
+
+const ContactSchema = z.object({
+  ReferencedContactID: z.number().int().positive().optional().describe("ID del contatto già presente in rubrica"),
+  ContactType: z.string().optional(),
+  Bank: BankAccountSchema.optional(),
+  DocumentsLogoID: z.number().int().positive().optional(),
+  CompanyName: z.string().describe("Ragione sociale del contatto"),
+  WorkCompanyName: z.string().optional(),
+  VatNumber: z.string().optional().describe("Partita IVA"),
+  FiscalCode: z.string().optional().describe("Codice fiscale"),
+  LegalAddress: AddressSchema.optional(),
+  LegalTelephoneAndEmail: TelephoneAndEmailSchema.optional(),
+  WorkAddress: AddressSchema.optional(),
+  WorkTelephoneAndEmail: TelephoneAndEmailSchema.optional(),
+  ContactInfo: ContactInfoSchema.optional(),
+  DocumentHeaderText: z.string().optional(),
+  DocumentFooterText: z.string().optional(),
+});
+
 const ItemSchema = z.object({
+  ID: z.number().int().positive().optional(),
+  ReferencedProductID: z.number().int().positive().optional(),
+  ReferencedDeliveryNoteID: z.number().int().positive().optional(),
+  CodeType: z.string().optional(),
+  Code: z.string().optional(),
   Description: z.string().describe("Descrizione della riga"),
+  Units: z.string().optional().describe("Unità di misura (es. 'pz', 'ore')"),
   Quantity: z.number().optional().describe("Quantità"),
   PricePerUnit: z.number().optional().describe("Prezzo unitario"),
-  VatRateCode: z.string().optional().describe("Codice aliquota IVA (es. '22')"),
-  Units: z.string().optional().describe("Unità di misura (es. 'pz', 'ore')"),
+  PricePerUnitDecimals: z.number().int().optional(),
+  DiscountsAndSurcharges: z.string().optional(),
+  Amount: z.number().optional(),
+  VatRateCode: z.string().describe("Codice aliquota IVA (es. '22')"),
+  InverseCalculation: z.boolean().optional(),
+  IsExpense: z.boolean().optional(),
+  Taxable: z.boolean().optional(),
 });
 
-// Schema Zod completo per il body dell'autofattura
-// L'autofattura viene emessa verso sé stessi (es. per reverse charge): il campo principale è Seller
+const TotalsSchema = z.object({
+  AmountToPay: z.number().optional(),
+  AmountToPayOtherCurrency: z.number().optional(),
+  Entries: z.record(z.unknown()).optional(),
+  DiscountsAndSurcharges: z.string().optional(),
+  AmountToPayRounding: z.number().optional(),
+});
+
+const PaymentInstalmentSchema = z.object({
+  ID: z.number().int().positive().optional(),
+  Amount: z.number().optional(),
+  TermsValue: z.number().int().optional(),
+  TermsValueType: z.string().optional(),
+  PaymentTerms: z.string().optional(),
+  DueDate: z.string().optional(),
+  WasPaid: z.boolean().optional(),
+  DontPrint: z.boolean().optional(),
+});
+
+const PaymentsDataSchema = z.object({
+  DueDate: z.string().optional(),
+  Paid: z.boolean().optional(),
+  Instalments: z.array(PaymentInstalmentSchema).optional(),
+});
+
+const AttachmentSchema = z.object({
+  Filename: z.string(),
+  Content: z.string(),
+});
+
+const FatturaPASchema = z
+  .object({
+    DatiTrasmissione: z.record(z.unknown()).describe("Dati di trasmissione FatturaPA"),
+  })
+  .catchall(z.unknown());
+
+// L'autofattura viene emessa verso sé stessi; Seller rappresenta la controparte.
 const SelfInvoiceInputSchema = z.object({
+  ExportTemplateID: z.number().int().positive().optional(),
+  FiscalAccountRegimeID: z.number().int().positive().optional(),
+  VatCollectability: z.string().optional(),
+  ReferenceDocumentID: z.number().int().positive().optional(),
   Code: z.string().optional().describe("Numero documento"),
   SectionalID: z.number().int().positive().optional().describe("ID del sezionale"),
   IssueDate: z.string().optional().describe("Data di emissione (formato ISO 8601)"),
   AccountingDate: z.string().optional().describe("Data contabile (formato ISO 8601)"),
   Currency: z.string().optional().describe("Codice valuta (es. 'EUR')"),
-  Seller: SellerSchema.optional().describe("Dati del cedente/prestatore (controparte nell'autofattura)"),
+  ExchangeCurrency: z.string().optional(),
+  ExchangeRate: z.number().optional(),
+  Seller: ContactSchema.optional().describe("Dati del cedente/prestatore (controparte nell'autofattura)"),
+  Buyer: ContactSchema.optional().describe("Dati del cessionario/committente"),
   Items: z.array(ItemSchema).optional().describe("Righe del documento"),
+  Totals: TotalsSchema.optional(),
+  PaymentsData: PaymentsDataSchema.optional(),
   DocumentNotes: z.string().optional().describe("Note sul documento"),
   Notes: z.string().optional().describe("Note interne"),
+  DocumentFormat: z.string().optional(),
+  FatturaPA: FatturaPASchema.optional(),
+  Attachments: z.array(AttachmentSchema).optional(),
+  TriggersOnSave: z.array(z.string()).optional(),
+  SendToBuyer: z.boolean().optional().describe("Se true, invia il documento al cliente"),
+});
+
+const SelfInvoiceCreateInputSchema = SelfInvoiceInputSchema.extend({
+  Items: z.array(ItemSchema).describe("Righe del documento (obbligatorie)"),
 });
 
 const ENDPOINT = "/SelfInvoice";
@@ -55,7 +165,7 @@ export const selfInvoiceTools: ToolDefinition[] = [
   {
     name: "self_invoice_create",
     description: "Crea una nuova autofattura (es. per reverse charge). Il campo principale della controparte è Seller",
-    inputSchema: SelfInvoiceInputSchema,
+    inputSchema: SelfInvoiceCreateInputSchema,
     handler: async (input) => {
       try {
         const { data } = await apiClient.post(ENDPOINT, input);
@@ -70,7 +180,7 @@ export const selfInvoiceTools: ToolDefinition[] = [
   {
     name: "self_invoice_update",
     description: "Aggiorna un'autofattura esistente tramite ID",
-    inputSchema: SelfInvoiceInputSchema.extend({
+    inputSchema: SelfInvoiceCreateInputSchema.extend({
       id: z.number().int().positive().describe("ID dell'autofattura da aggiornare"),
     }),
     handler: async (input) => {
@@ -107,6 +217,7 @@ export const selfInvoiceTools: ToolDefinition[] = [
     name: "self_invoice_next_code",
     description: "Ottieni il prossimo numero disponibile per un'autofattura",
     inputSchema: z.object({
+      FiscalYear: z.number().int().describe("Anno fiscale per cui calcolare il prossimo numero"),
       SectionalID: z.number().int().positive().optional().describe("ID del sezionale (opzionale)"),
     }),
     handler: async (input) => {
