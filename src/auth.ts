@@ -67,7 +67,7 @@ async function requestToken(grantType: OAuthGrantType): Promise<TokenResponse> {
     {
       headers: {
         Authorization: getBasicAuthHeader(),
-        Accept: getDefaultAcceptHeader(),
+        Accept: "application/vnd.myfoglio.v2+json",
         "Content-Type": "application/x-www-form-urlencoded",
       },
     }

@@ -49,6 +49,11 @@ Authorization: Basic <base64(api_key:api_secret)>
 Accept: application/vnd.myfoglio.v2+json
 ```
 
+Token requests to `POST /Authorization` always use API v2, independently of
+`API_VERSION`. The v1 authorization endpoint expects `ClientID` and `ClientSecret`
+in the request body instead of Basic authentication. Setting `API_VERSION=1`
+therefore selects v1 for resource requests only, not for obtaining or refreshing tokens.
+
 ## Documentation
 
 | Guide | Description |
@@ -65,7 +70,7 @@ Accept: application/vnd.myfoglio.v2+json
 | `MYFOGLIO_API_KEY` | — | API key used to obtain the OAuth access token |
 | `MYFOGLIO_API_SECRET` | — | API secret paired with the API key |
 | `MYFOGLIO_REFRESH_TOKEN` | — | Optional refresh token reused automatically |
-| `API_VERSION` | `2` | API version used in the `Accept` header |
+| `API_VERSION` | `2` | API version used in resource request `Accept` headers; token requests always use v2 |
 | `MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
 | `MCP_HTTP_PORT` | `3000` | Port for HTTP transport |
 
